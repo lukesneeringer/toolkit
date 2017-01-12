@@ -100,6 +100,11 @@ public class JavaNameFormatter implements NameFormatter {
     return name.toOriginal();
   }
 
+  @Override
+  public String extension() {
+    return "java";
+  }
+
   public static final ImmutableSet<String> RESERVED_IDENTIFIER_SET =
       ImmutableSet.<String>builder()
           .add(

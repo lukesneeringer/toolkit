@@ -100,6 +100,11 @@ public class NodeJSNameFormatter implements NameFormatter {
     return name.toOriginal();
   }
 
+  @Override
+  public String extension() {
+    return "js";
+  }
+
   /**
    * A set of ECMAScript 2016 reserved words. See
    * https://tc39.github.io/ecma262/2016/#sec-reserved-words

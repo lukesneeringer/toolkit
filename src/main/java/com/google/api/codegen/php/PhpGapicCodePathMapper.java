@@ -75,7 +75,7 @@ public abstract class PhpGapicCodePathMapper implements GapicCodePathMapper {
   }
 
   public static PhpGapicCodePathMapper defaultInstance() {
-    return newBuilder().build();
+    return newBuilder().setPrefix("src").build();
   }
 
   @AutoValue.Builder

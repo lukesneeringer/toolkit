@@ -58,7 +58,8 @@ public class DynamicLangTypeTable implements TypeTable {
   public TypeName getTypeName(String fullName) {
     int lastSeparatorIndex = fullName.lastIndexOf(getSeparator());
     if (lastSeparatorIndex < 0) {
-      throw new IllegalArgumentException("expected fully qualified name");
+      throw new IllegalArgumentException(
+          String.format("Expected fully qualified name; got \"%s\".", fullName));
     }
     String nickname = fullName.substring(lastSeparatorIndex + getSeparator().length());
     return new TypeName(fullName, nickname);

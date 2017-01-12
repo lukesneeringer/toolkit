@@ -99,4 +99,9 @@ public abstract class NameFormatterDelegator implements NameFormatter {
   public String classFileNameBase(Name name) {
     return formatter.classFileNameBase(name);
   }
+
+  @Override
+  public String extension() {
+    return formatter.extension();
+  }
 }

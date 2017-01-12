@@ -90,4 +90,9 @@ public class PythonNameFormatter implements NameFormatter {
   public String classFileNameBase(Name name) {
     return name.toLowerUnderscore();
   }
+
+  @Override
+  public String extension() {
+    return "py";
+  }
 }

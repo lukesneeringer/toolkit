@@ -67,4 +67,7 @@ public interface NameFormatter {
 
   /** Formats the base file name. */
   String classFileNameBase(Name name);
+
+  /** The file extension for the given language. */
+  String extension();
 }

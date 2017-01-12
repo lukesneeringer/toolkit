@@ -97,7 +97,12 @@ public class GoNameFormatter implements NameFormatter {
 
   @Override
   public String classFileNameBase(Name name) {
-    return name.toLowerUnderscore() + ".go";
+    return name.toLowerUnderscore() + "." + extension();
+  }
+
+  @Override
+  public String extension() {
+    return "go";
   }
 
   /**

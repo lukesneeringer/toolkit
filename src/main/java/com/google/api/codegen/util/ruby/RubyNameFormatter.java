@@ -100,6 +100,11 @@ public class RubyNameFormatter implements NameFormatter {
     return name.toLowerUnderscore();
   }
 
+  @Override
+  public String extension() {
+    return "rb";
+  }
+
   /**
    * A set of Ruby keywords and built-ins. See:
    * http://docs.ruby-lang.org/en/2.3.0/keywords_rdoc.html

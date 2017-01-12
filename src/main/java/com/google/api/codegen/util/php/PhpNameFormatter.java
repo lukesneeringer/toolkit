@@ -101,6 +101,11 @@ public class PhpNameFormatter implements NameFormatter {
     return name.toOriginal();
   }
 
+  @Override
+  public String extension() {
+    return "php";
+  }
+
   /**
    * A set of PHP keywords and built-ins. keywords: http://php.net/manual/en/reserved.keywords.php
    */

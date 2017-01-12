@@ -246,18 +246,18 @@ public class MainGapicProviderFactory
 
     } else if (id.equals(PHP)) {
       if (generatorConfig.enableSurfaceGenerator()) {
-        GapicCodePathMapper phpPathMapper =
-            PhpGapicCodePathMapper.newBuilder().setPrefix("src").build();
+        GapicCodePathMapper phpPathMapper = PhpGapicCodePathMapper.defaultInstance();
         GapicProvider<? extends Object> provider =
             ViewModelGapicProvider.newBuilder()
                 .setModel(model)
                 .setApiConfig(apiConfig)
                 .setSnippetSetRunner(new CommonSnippetSetRunner(new CommonRenderingUtil()))
-                .setModelToViewTransformer(new PhpGapicSurfaceTransformer(apiConfig, phpPathMapper))
+                .setModelToViewTransformer(new PhpGapicSurfaceTransformer())
                 .build();
 
         GapicCodePathMapper phpClientConfigPathMapper =
             PhpGapicCodePathMapper.newBuilder().setPrefix("src").setSuffix("resources").build();
+
         GapicProvider<? extends Object> clientConfigProvider =
             CommonGapicProvider.<Interface>newBuilder()
                 .setModel(model)
@@ -275,6 +275,8 @@ public class MainGapicProviderFactory
 
     } else if (id.equals(PYTHON) || id.equals(PYTHON_DOC)) {
       if (generatorConfig.enableSurfaceGenerator()) {
+        // The "main provider" is responsible for the creation of the actual
+        // surface code that covers the API.
         GapicProvider<?> mainProvider =
             ViewModelGapicProvider.newBuilder()
                 .setModel(model)
@@ -282,7 +284,11 @@ public class MainGapicProviderFactory
                 .setSnippetSetRunner(new CommonSnippetSetRunner(new CommonRenderingUtil()))
                 .setModelToViewTransformer(new PythonGapicSurfaceTransformer())
                 .build();
-        GapicCodePathMapper pythonPathMapper =
+        providers.add(mainProvider);
+
+        // The "config provider" generates...
+        //   FIXME: What exactly?
+        CommonGapicCodePathMapper pythonPathMapper =
             CommonGapicCodePathMapper.newBuilder().setShouldAppendPackage(true).build();
         GapicProvider<? extends Object> clientConfigProvider =
             CommonGapicProvider.<Interface>newBuilder()
@@ -295,10 +301,10 @@ public class MainGapicProviderFactory
                 .setSnippetFileNames(Arrays.asList("clientconfig/json.snip"))
                 .setCodePathMapper(pythonPathMapper)
                 .build();
-
-        providers.add(mainProvider);
         providers.add(clientConfigProvider);
 
+        // Additionally, if we are generating Python docs, run the snippets
+        // for that.
         if (id.equals(PYTHON_DOC)) {
           GapicProvider<? extends Object> messageProvider =
               CommonGapicProvider.<ProtoFile>newBuilder()

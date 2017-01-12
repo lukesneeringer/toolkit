@@ -91,6 +91,11 @@ public class CSharpNameFormatter implements NameFormatter {
     return publicClassName(name);
   }
 
+  @Override
+  public String extension() {
+    return "cs";
+  }
+
   /**
    * A set of C# reserved identifiers. See https://msdn.microsoft.com/en-us/library/x53a06bb.aspx
    */
