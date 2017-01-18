@@ -1,529 +1,520 @@
 @extends "py/common.snip"
 @extends "py/method_sample.snip"
 
-@snippet generate(xapiClass)
-    <?php
-    {@licenseSection(xapiClass)}
+@snippet generate(viewModel)
+    {@licenseSection(viewModel)}
 
-    namespace {@xapiClass.packageName};
+    {@moduleDocstring(viewModel)}
 
-    @join import : xapiClass.imports
+    {@importSection(viewModel.imports)}
+
+
+    @if aliasSection(viewModel)
+        {@aliasSection(viewModel)}
+
+
+    @end
+    {@serviceClass(viewModel)}
+@end
+
+@private licenseSection(viewModel)
+    @# Copyright 2016 Google Inc. All rights reserved.
+    @#
+    @# Licensed under the Apache License, Version 2.0 (the "License");
+    @# you may not use this file except in compliance with the License.
+    @# You may obtain a copy of the License at
+    @#
+    @# http://www.apache.org/licenses/LICENSE-2.0
+    @#
+    @# Unless required by applicable law or agreed to in writing, software
+    @# distributed under the License is distributed on an "AS IS" BASIS,
+    @# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    @# See the License for the specific language governing permissions and
+    @# limitations under the License.
+    @#
+    @# EDITING INSTRUCTIONS
+    @# This file was generated from the file
+    @# https://github.com/google/googleapis/blob/master/{@viewModel.protoFilename},
+    @# and updates to that file get reflected here through a refresh process.
+    @# For the short term, the refresh process will only be runnable by Google engineers.
+    @#
+    @# The only allowed edits are to method and file documentation. A 3-way
+    @# merge preserves those additions if the generated source changes.
+@end
+
+@private moduleDocstring(viewModel)
+    """Accesses the {@viewModel.serviceTitle} API."""
+@end
+
+@private importSection(imports)
+    @join import : imports
         {@import}
     @end
-
-    {@serviceDoc(xapiClass)}
-    class {@xapiClass.name}
-    {
-        {@constants(xapiClass)}
-        {@statics(xapiClass)}
-        {@members(xapiClass)}
-        {@staticFunctions(xapiClass)}
-        {@functions(xapiClass)}
-        {@constructor(xapiClass)}
-        {@apiMethods(xapiClass)}
-        {@cleanupSection(xapiClass)}
-    }
 @end
 
-@private licenseSection(xapiClass)
-   @# Copyright 2016 Google Inc. All Rights Reserved.
-   @#
-   @# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
-   @# in compliance with the License. You may obtain a copy of the License at
-   @#
-   @# http://www.apache.org/licenses/LICENSE-2.0
-   @#
-   @# Unless required by applicable law or agreed to in writing, software distributed under the License
-   @# is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
-   @# or implied. See the License for the specific language governing permissions and limitations under
-   @# the License.
+@private aliasSection(viewModel)
+    @let ifaceConfig = context.getApiConfig.getInterfaceConfig(service), \
+            bundling = context.messages.filterBundlingMethods(ifaceConfig, context.getSupportedMethodsV2(service)), \
+            pageStreaming = context.messages.filterPageStreamingMethods(ifaceConfig, context.getSupportedMethodsV2(service))
+        @if bundling
+            _BundleDesc = google.gax.BundleDescriptor
+        @end
+        # Note that this should be inside the page streaming conditional. But a snippets bug
+        # causes the indentation to render improperly if so. The result is that sometimes we
+        # generate too much whitespace, which can be removed by yapf in the pipeline.
+        {@BREAK}
+        @if pageStreaming
 
-   @# GENERATED CODE WARNING
-   @# This file was generated from the file
-   @# https://github.com/google/googleapis/blob/master/{@xapiClass.protoFilename}
-   @# and updates to that file get reflected here through a refresh process.
-@end
-
-@private serviceDoc(xapiClass)
-    @let coreSampleCode = sampleCode(xapiClass.doc.exampleApiMethod), \
-         decoratedSampleCode = decorateSampleCode(xapiClass.doc.exampleApiMethod, coreSampleCode)
-        {@renderServiceDoc(xapiClass.doc, decoratedSampleCode)}
-    @end
-@end
-
-@private renderServiceDoc(xapiClassDoc, exampleMethodSampleCode)
-    """
-    Service Description: {@xapiClassDoc.firstLine}
-    @if xapiClassDoc.remainingLines
-        @join commentLine : xapiClassDoc.remainingLines
-            {@commentLine}
+            _PageDesc = google.gax.PageDescriptor
         @end
     @end
-
-    This class provides the ability to make remote calls to the backing service through method
-    calls that map to API methods. Sample code to get started:
-
-    ```
-    @join sampleLine : util.getDocLines(exampleMethodSampleCode)
-        {@sampleLine}
-    @end
-    ```
-
-    Many parameters require resource names to be formatted in a particular way. To assist
-    with these names, this class includes a format method for each type of name, and additionally
-    a parse method to extract the individual identifiers contained within names that are
-    returned.
-    """
 @end
 
-@private constants(xapiClass)
-    @if xapiClass.hasDefaultServiceAddress
-      @# The default address of the service.
-      SERVICE_ADDRESS = '{@xapiClass.serviceAddress}'
-    @end
+@private serviceClass(viewModel)
+    @let path_templates = {@pathTemplateSection(viewModel)}, \
+         documentation = {@defaultComments(viewModel)}
+        class {@context.getApiWrapperName(viewModel)}(object):
+            @if documentation
+                {@documentation}
 
-    @# The default port of the service.
-    DEFAULT_SERVICE_PORT = {@xapiClass.servicePort}
+            @end
+            {@constantSection(viewModel)}
 
-    @# The default timeout for non-retrying methods.
-    DEFAULT_TIMEOUT_MILLIS = 30000;
+            @if path_templates
+                {@path_templates}
 
-    @# This code is automatically generated, and is built on and depends on our
-    @# `google-gax` library, which provides common functionality in Python.
-    _CODE_GEN_NAME_VERSION = 'gapic/0.1.0'
-    _GAX_VERSION = pkg_resources.get_distribution('google-gax').version
-@end
+            @end
+            {@initMethodSection(viewModel)}
 
-@private statics(xapiClass)
-    @join pathTemplate : xapiClass.pathTemplates
-        private static ${@pathTemplate.name};
-    @end
-    {@BREAK}
-@end
+            {@serviceMethodsSection(viewModel)}
 
-@private members(xapiClass)
-    private $grpcCredentialsHelper;
-    @join stub : xapiClass.stubs
-        private ${@stub.name};
-    @end
-    private $scopes;
-    private $defaultCallSettings;
-    private $descriptors;
-    @if xapiClass.hasLongRunningOperations
-      private $operationsClient;
-    @end
-    {@""}
-@end
-
-@private staticFunctions(xapiClass)
-    @join function : xapiClass.formatResourceFunctions
-        {@formatResourceFunction(function)}
-    @end
-    {@""}
-    @join function : xapiClass.parseResourceFunctions
-        {@parseResourceFunction(function)}
-    @end
-    {@""}
-    @join function : xapiClass.pathTemplateGetterFunctions
-        {@pathTemplateGetterFunction(function)}
-    @end
-    {@pageStreamingDescriptorFunction(xapiClass)}
-    {@longRunningDescriptorFunction(xapiClass)}
-@end
-
-@private formatResourceFunction(function)
-    @@classmethod
-    def {@function.name}(cls, \
-        {@formatResourceFunctionParams(function.resourceIdParams)}):
-        """Formats a string containing the fully-qualified path to represent
-        a {@function.entityName} resource.
-        """
-        return cls.{@function.pathTemplateGetterName}().render([
-            {@pathTemplateArgs(function.resourceIdParams)},
-        ])
-    {@""}
-@end
-
-@private formatResourceFunctionParams(resourceIdParams)
-    @join param : resourceIdParams on ", "
-        {@param.name}
     @end
 @end
 
-@private pathTemplateArgs(resourceIdParams)
-    @join param : resourceIdParams on ",".add(BREAK)
-        '{@param.templateKey}': {@param.name}
-    @end
-@end
+@private constantSection(viewModel)
+    @let ifaceConfig = context.getApiConfig.getInterfaceConfig(service)
+        SERVICE_ADDRESS = '{@viewModel.serviceAddress}'
+        """The default address of the service."""
 
-@private parseResourceFunction(function)
-    @@classmethod
-    def {@function.name}(cls, {@function.entityNameParamName}):
-        """Parses the {@function.outputResourceId} from the given
-        fully-qualified path which represents a {@function.entityName}
-        resource.
-        """
-        return cls.{@function.pathTemplateGetterName}().match(
-          {@function.entityNameParamName},
-        )['{@function.outputResourceId}']
-    }
-    {@""}
-@end
+        DEFAULT_SERVICE_PORT = {@viewModel.servicePort}
+        """The default port of the service."""
 
-@private pathTemplateGetterFunction(function)
-    @@classmethod
-    def {@function.name}(cls):
-        if cls.{@function.pathTemplateName} is None:
-            cls.{@function.pathTemplateName} = path_template.PathTemplate('{@function.pattern}')
-        return cls.{@function.pathTemplateName}
-    {@""}
-@end
+        _CODE_GEN_NAME_VERSION = 'gapic/0.1.0'
 
-@private pageStreamingDescriptorFunction(xapiClass)
-    private static function getPageStreamingDescriptors()
-    {
-        @join descriptor : xapiClass.pageStreamingDescriptors
-            ${@descriptor.varName} =
-                    new PageStreamingDescriptor([
-                        'requestPageTokenField' => '{@descriptor.requestTokenFieldName}',
-                        @if descriptor.requestHasPageSizeField
-                            'requestPageSizeField' => '{@descriptor.requestPageSizeFieldName}',
+        _GAX_VERSION = pkg_resources.get_distribution('google-gax').version
+        @if context.messages.filterPageStreamingMethods(ifaceConfig, context.getSupportedMethodsV2(service))
+
+            _PAGE_DESCRIPTORS = {
+                @join method : context.messages.filterPageStreamingMethods(ifaceConfig, context.getSupportedMethodsV2(service)) on {@", "}.add(BREAK)
+                    @let pageStreaming = ifaceConfig.getMethodConfig(method).getPageStreaming(), \
+                         requestToken = pageStreaming.getRequestTokenField().getSimpleName(), \
+                         responseToken = pageStreaming.getResponseTokenField().getSimpleName(), \
+                         resources = pageStreaming.getResourcesFieldName
+                        '{@methodName(method)}': _PageDesc(
+                            '{@requestToken}',
+                            '{@responseToken}',
+                            '{@resources}'
+                        )
+                    @end
+                @end
+            }
+        @end
+        @if context.messages.filterBundlingMethods(ifaceConfig, context.getSupportedMethodsV2(service))
+
+            _BUNDLE_DESCRIPTORS = {
+                @let ifaceConfig = context.getApiConfig.getInterfaceConfig(service)
+                    @join method : context.messages.filterBundlingMethods(ifaceConfig, context.getSupportedMethodsV2(service)) on {@", "}.add(BREAK)
+                        @let bundling = ifaceConfig.getMethodConfig(method).getBundling()
+                            '{@methodName(method)}': _BundleDesc(
+                                {@bundleDescriptorBody(bundling, method)}
+                            )
                         @end
-                        'responsePageTokenField' => '{@descriptor.responseTokenFieldName}',
-                        'resourceField' => '{@descriptor.resourcesFieldName}',
-                    ]);
-        @end
-
-        $pageStreamingDescriptors = [
-            @join descriptor : xapiClass.pageStreamingDescriptors
-                '{@descriptor.methodName}' => ${@descriptor.varName},
-            @end
-        ];
-
-        return $pageStreamingDescriptors;
-    }
-    {@""}
-@end
-
-@private longRunningDescriptorFunction(xapiClass)
-    @if xapiClass.hasLongRunningOperations
-      def getLongRunningDescriptors()
-      {
-          return [
-              @join descriptor : xapiClass.longRunningDescriptors
-                  '{@descriptor.methodName}' => [
-                      'operationReturnType' => '{@descriptor.operationPayloadTypeName}',
-                      'metadataReturnType' => '{@descriptor.metadataTypeName}',
-                  ],
-              @end
-          ];
-      }
-      {@""}
-    @end
-@end
-
-@private functions(xapiClass)
-    @if xapiClass.hasLongRunningOperations
-      def get_operations_client():
-          return this._operations_client;
-    @end
-    {@""}
-@end
-
-@private constructor(xapiClass)
-    def __init__(self,
-        service_path=SERVICE_ADDRESS,
-        port=DEFAULT_SERVICE_PORT,
-        channel=None,
-        credentials=None,
-        ssl_credentials=None,
-        scopes=None,
-        client_config=None,
-        app_name='gax',
-        app_version=_GAX_VERSION):
-        """Constructor.
-
-        Args:
-          service_path (string): The domain name of the API remote host.
-          port (int): The port on which to connect to the remote host.
-          channel (:class:`grpc.Channel`): A ``Channel`` instance through
-            which to make calls.
-          credentials (object): The authorization credentials to attach to
-            requests. These credentials identify this application to the
-            service.
-          ssl_credentials (:class:`grpc.ChannelCredentials`): A
-            ``ChannelCredentials`` instance for use with an SSL-enabled
-            channel.
-          scopes (list[string]): A list of OAuth2 scopes to attach to requests.
-          client_config (dict):
-            A dictionary for call options for each method. See
-            :func:`google.gax.construct_settings` for the structure of
-            this data. Falls back to the default config if not specified
-            or the specified config is missing data points.
-          app_name (string): The codename of the calling service.
-          app_version (string): The version of the calling service.
-
-        Returns:
-          A `{xapiClass.name}` object.
-        """
-    public function __construct($options = [])
-    {
-        @if xapiClass.missingDefaultServiceAddress
-          if (!array_key_exists('serviceAddress', $options)) {
-            throw new ValidationException("The 'serviceAddress' option must be provided.");
-          }
-        @end
-        @if xapiClass.missingDefaultServiceScopes
-          if (!array_key_exists('scopes', $options)) {
-            throw new ValidationException("The 'scopes' option must be provided.");
-          }
-        @end
-        $defaultOptions = [
-            @if xapiClass.hasDefaultServiceAddress
-              'serviceAddress' => self::SERVICE_ADDRESS,
-            @end
-            'port' => self::DEFAULT_SERVICE_PORT,
-            @if xapiClass.hasDefaultServiceScopes
-              'scopes' => [
-                  @join scope : {@xapiClass.authScopes}
-                      '{@scope}',
-                  @end
-              ],
-            @end
-            'retryingOverride' => null,
-            'timeoutMillis' => self::DEFAULT_TIMEOUT_MILLIS,
-            'appName' => 'gax',
-            'appVersion' => AgentHeaderDescriptor::getGaxVersion(),
-        ];
-        $options = array_merge($defaultOptions, $options);
-
-        @if xapiClass.hasLongRunningOperations
-            $this->operationsClient = new OperationsClient([
-                'serviceAddress' => $options['serviceAddress'],
-                'scopes' => $options['scopes'],
-            ]);
-        @end
-
-        $headerDescriptor = new AgentHeaderDescriptor([
-            'clientName' => $options['appName'],
-            'clientVersion' => $options['appVersion'],
-            'codeGenName' => self::_CODEGEN_NAME,
-            'codeGenVersion' => self::_CODEGEN_VERSION,
-            'gaxVersion' => AgentHeaderDescriptor::getGaxVersion(),
-            'phpVersion' => phpversion(),
-        ]);
-
-        $defaultDescriptors = ['headerDescriptor' => $headerDescriptor];
-        $this->descriptors = [
-            @join methodKey : xapiClass.methodKeys
-                '{@methodKey}' => $defaultDescriptors,
-            @end
-        ];
-        $pageStreamingDescriptors = self::getPageStreamingDescriptors();
-        foreach ($pageStreamingDescriptors as $method => $pageStreamingDescriptor) {
-            $this->descriptors[$method]['pageStreamingDescriptor'] = $pageStreamingDescriptor;
-        }
-        @if xapiClass.hasLongRunningOperations
-          $longRunningDescriptors = self::getLongRunningDescriptors();
-          foreach ($longRunningDescriptors as $method => $longRunningDescriptor) {
-              $this->descriptors[$method]['longRunningDescriptor'] = $longRunningDescriptor + ['operationsClient' => $this->operationsClient];
-          }
-        @end
-
-        $clientConfigJsonString = file_get_contents(__DIR__ . '/{@xapiClass.clientConfigPath}');
-        $clientConfig = json_decode($clientConfigJsonString, true);
-        $this->defaultCallSettings =
-                CallSettings::load('{@xapiClass.interfaceKey}',
-                                   $clientConfig,
-                                   $options['retryingOverride'],
-                                   GrpcConstants::getStatusCodeNames(),
-                                   $options['timeoutMillis']);
-
-        $this->scopes = $options['scopes'];
-
-        $createStubOptions = [];
-        if (array_key_exists('sslCreds', $options)) {
-            $createStubOptions['sslCreds'] = $options['sslCreds'];
-        }
-        $grpcCredentialsHelperOptions = array_diff_key($options, $defaultOptions);
-        $this->grpcCredentialsHelper = new GrpcCredentialsHelper($this->scopes, $grpcCredentialsHelperOptions);
-
-        @join stub : xapiClass.stubs
-            ${@stub.createStubFunctionName} = function ($hostname, $opts) {
-                return new {@stub.grpcClientTypeName}($hostname, $opts);
-            };
-            if (array_key_exists('{@stub.createStubFunctionName}', $options)) {
-                ${@stub.createStubFunctionName} = $options['{@stub.createStubFunctionName}'];
+                    @end
+                @end
             }
-            $this->{@stub.name} = $this->grpcCredentialsHelper->createStub(
-                ${@stub.createStubFunctionName},
-                $options['serviceAddress'],
-                $options['port'],
-                $createStubOptions);
         @end
-    }
-    {@""}
-@end
 
-@private apiMethods(xapiClass)
-    @join apiMethod : xapiClass.apiMethods
-        @let coreSampleCode = sampleCode(apiMethod)
-            {@methodDoc(apiMethod.doc, decorateSampleCode(apiMethod, coreSampleCode))}
-        @end
-        public function {@apiMethod.name}({@paramList(apiMethod.methodParams)})
-        {
-            $request = new {@apiMethod.requestTypeName}();
-            @join param : apiMethod.requiredRequestObjectParams
-                {@setRequiredFieldCall(param)}
+        @# The scopes needed to make gRPC calls to all of the methods defined in
+        @# this service
+        _ALL_SCOPES = (
+            @join auth_scope : context.getServiceConfig.getAuthScopes(service) on BREAK
+                '{@auth_scope}',
             @end
-            @join param : apiMethod.optionalRequestObjectParams
-                {@setOptionalFieldCall(param)}
-            @end
-
-            $mergedSettings = $this->defaultCallSettings['{@apiMethod.key}']->merge(
-                new CallSettings($optionalArgs));
-            $callable = ApiCallable::createApiCall(
-                $this->{@apiMethod.stubName}, '{@apiMethod.grpcMethodName}', $mergedSettings, $this->descriptors['{@apiMethod.key}']);
-
-            return $callable(
-                $request,
-                [],
-                ['call_credentials_callback' => $this->createCredentialsCallback()]);
-        }
-        {@""}
+        )
     @end
 @end
 
-@private paramList(params)
-    @join param : params on ", "
-        @if param.defaultValue
-            {@param.name}={@param.defaultValue}
+@private constructDefaults(service)
+    @let ifaceConfig = context.getApiConfig.getInterfaceConfig(service), \
+         jsonBaseName = {@context.upperCamelToLowerUnderscore(service.getSimpleName)}
+        default_client_config = json.loads(pkg_resources.resource_string(
+            __name__, '{@jsonBaseName}_client_config.json').decode())
+        @if or(context.messages.filterPageStreamingMethods(ifaceConfig, context.getSupportedMethodsV2(service)), \
+               context.messages.filterBundlingMethods(ifaceConfig, context.getSupportedMethodsV2(service)))
+            defaults = api_callable.construct_settings(
+                '{@service.getFullName}',
+                default_client_config,
+                client_config,
+                config.STATUS_CODE_NAMES,
+                kwargs={'metadata': metadata},
+                @if context.messages.filterBundlingMethods(ifaceConfig, context.getSupportedMethodsV2(service))
+                    @if context.messages.filterPageStreamingMethods(ifaceConfig, context.getSupportedMethodsV2(service))
+                        bundle_descriptors=self._BUNDLE_DESCRIPTORS,
+                    @else
+                        bundle_descriptors=self._BUNDLE_DESCRIPTORS)
+                    @end
+                @end
+                @if context.messages.filterPageStreamingMethods(ifaceConfig, context.getSupportedMethodsV2(service))
+                    page_descriptors=self._PAGE_DESCRIPTORS)
+                @end
         @else
-            {@param.name}
+            defaults = api_callable.construct_settings(
+                '{@service.getFullName}',
+                default_client_config,
+                client_config,
+                config.STATUS_CODE_NAMES,
+                kwargs={'metadata': metadata})
         @end
     @end
 @end
 
-@private setRequiredFieldCall(param)
-    @if param.isMap
-        foreach (${@param.name} as $key => $value) {
-            $request->{@param.setCallName}((new {@param.elementTypeName}())->setKey($key)->setValue($value));
-        }
-    @else
-        @if param.isArray
-            foreach (${@param.name} as $elem) {
-                $request->{@param.setCallName}($elem);
-            }
-        @else
-            $request->{@param.setCallName}(${@param.name});
-        @end
-    @end
-@end
+@private initMethodSection(service)
+    @let ifaceConfig = context.getApiConfig.getInterfaceConfig(service)
+        def __init__(
+                self,
+                service_path=SERVICE_ADDRESS,
+                port=DEFAULT_SERVICE_PORT,
+                channel=None,
+                credentials=None,
+                ssl_credentials=None,
+                scopes=None,
+                client_config=None,
+                app_name='gax',
+                app_version=_GAX_VERSION):
+            """Constructor.
 
-@private setOptionalFieldCall(param)
-    if (isset($optionalArgs['{@param.name}'])) {
-        @if param.isMap
-            foreach ($optionalArgs['{@param.name}'] as $key => $value) {
-                $request->{@param.setCallName}((new {@param.elementTypeName}())->setKey($key)->setValue($value));
-            }
-        @else
-            @if param.isArray
-                foreach ($optionalArgs['{@param.name}'] as $elem) {
-                    $request->{@param.setCallName}($elem);
-                }
-            @else
-                $request->{@param.setCallName}($optionalArgs['{@param.name}']);
-            @end
-        @end
-    }
-@end
+            Args:
+              service_path (string): The domain name of the API remote host.
+              port (int): The port on which to connect to the remote host.
+              channel (:class:`grpc.Channel`): A ``Channel`` instance through
+                which to make calls.
+              credentials (object): The authorization credentials to attach to
+                requests. These credentials identify this application to the
+                service.
+              ssl_credentials (:class:`grpc.ChannelCredentials`): A
+                ``ChannelCredentials`` instance for use with an SSL-enabled
+                channel.
+              scopes (list[string]): A list of OAuth2 scopes to attach to requests.
+              client_config (dict):
+                A dictionary for call options for each method. See
+                :func:`google.gax.construct_settings` for the structure of
+                this data. Falls back to the default config if not specified
+                or the specified config is missing data points.
+              app_name (string): The codename of the calling service.
+              app_version (string): The version of the calling service.
 
-@private methodDoc(apiMethodDoc, methodSampleCode)
-    /**
-    @join commentLine : apiMethodDoc.mainDocLines
-        {@""} * {@commentLine}
-    @end
-     *
-     * Sample code:
-     * ```
-    @join sampleLine : util.getDocLines(methodSampleCode)
-        {@""} * {@sampleLine}
-    @end
-     * ```
-    @if apiMethodDoc.paramDocs
-        {@""} *
-        @join doc : apiMethodDoc.paramDocs
-            {@paramDoc(doc)}
-        @end
-    @end
-    @if apiMethodDoc.returnTypeName
-        {@""} *
-         * @@return {@apiMethodDoc.returnTypeName}
-    @end
-     *
-     * @@throws \Google\GAX\ApiException if the remote call fails
-     */
-    {@""}
-@end
-
-@private paramDoc(doc)
-    @switch doc.type
-    @case "SimpleParamDocView"
-        {@simpleParamDoc(doc)}
-    @case "MapParamDocView"
-        {@mapParamDoc(doc)}
-    @default
-        $unhandledCase: {@doc.type}$
-    @end
-@end
-
-@private simpleParamDoc(doc)
-    {@""} * @@param {@doc.typeName} ${@doc.paramName} {@doc.firstLine}
-    @if doc.remainingLines
-        @join commentLine : doc.remainingLines
-            {@""} * {@commentLine}
-        @end
-    @end
-@end
-
-@private mapParamDoc(doc)
-    {@""} * @@param {@doc.typeName} ${@doc.paramName} {
-     *     {@doc.firstLine}
-    @if doc.remainingLines
-        @join commentLine : doc.remainingLines
-            {@""} *     {@commentLine}
-        @end
-    @end
-    @if doc.arrayKeyDocs
-        @join simpleParamDoc : doc.arrayKeyDocs
-            {@""} *     @@type {@simpleParamDoc.typeName} ${@simpleParamDoc.paramName}
-            @if simpleParamDoc.firstLine
-                {@""} *          {@simpleParamDoc.firstLine}
-            @end
-            @if simpleParamDoc.remainingLines
-                @join commentLine : simpleParamDoc.remainingLines
-                    {@""} *          {@commentLine}
+            Returns:
+              A {@context.getApiWrapperName(service)} object.
+            """
+            if scopes is None:
+                scopes = self._ALL_SCOPES
+            if client_config is None:
+                client_config = {}
+            goog_api_client = '{}/{} {} gax/{} python/{}'.format(
+                app_name,
+                app_version,
+                self._CODE_GEN_NAME_VERSION,
+                self._GAX_VERSION,
+                platform.python_version()
+            )
+            metadata = [('x-goog-api-client', goog_api_client)]
+            {@constructDefaults(service)}
+            @join stubInterface : context.getStubInterfaces(service)
+                @let stubName = context.stubName(stubInterface), \
+                        stubModule = importHandler.fileToModule(stubInterface.getFile()), \
+                        stubService = stubInterface.getSimpleName
+                    self.{@stubName} = config.create_stub(
+                        {@stubModule}.{@stubService}Stub,
+                        channel=channel,
+                        service_path=service_path,
+                        service_port=port,
+                        credentials=credentials,
+                        scopes=scopes,
+                        ssl_credentials=ssl_credentials)
                 @end
             @end
-        @end
+
+            @join method : context.getSupportedMethodsV2(service)
+                self._{@methodName(method)} = api_callable.create_api_call(
+                    self.{@context.stubNameForMethod(service, method)}.{@method.getSimpleName()},
+                    settings=defaults['{@methodName(method)}'])
+            @end
     @end
-     * }
 @end
 
-@private cleanupSection(xapiClass)
-    /**
-     * Initiates an orderly shutdown in which preexisting calls continue but new
-     * calls are immediately cancelled.
-     */
-    public function close()
-    {
-        @join stub : xapiClass.stubs
-            $this->{@stub.name}->close();
+@private bundleDescriptorBody(bundling, method)
+    @let bundledField = bundling.getBundledField().getSimpleName(), \
+            discriminatorFields = bundling.getDiscriminatorFields()
+        @if {@bundling.hasSubresponseField}
+                '{@bundledField}',
+                [
+                    @join fieldSelector : bundling.getDiscriminatorFields() on {@", "}.add(BREAK)
+                        '{@fieldSelector.getParamName}'
+                    @end
+                ],
+                subresponse_field='{@bundling.getSubresponseField().getSimpleName()}',
+        @else
+                '{@bundledField}',
+                [
+                    @join fieldSelector : bundling.getDiscriminatorFields() on {@", "}.add(BREAK)
+                        '{@fieldSelector.getParamName}'
+                    @end
+                ]
         @end
-    }
+    @end
+@end
 
-    private function createCredentialsCallback()
-    {
-        return $this->grpcCredentialsHelper->createCallCredentialsCallback();
-    }
+@private pathTemplateName(collectionConfig)
+    _{@context.lowerUnderscoreToUpperUnderscore(entityName(collectionConfig))}_PATH_TEMPLATE
+@end
+
+@private pathTemplateSection(service)
+    @if context.getApiConfig.getInterfaceConfig(service).getSingleResourceNameConfigs()
+        @join collectionConfig : context.getApiConfig.getInterfaceConfig(service).getSingleResourceNameConfigs()
+            {@pathTemplateName(collectionConfig)} = path_template.PathTemplate(
+                '{@collectionConfig.getNamePattern}')
+        @end
+
+        @join collectionConfig : context.getApiConfig.getInterfaceConfig(service).getSingleResourceNameConfigs()
+
+            {@createResourceFunction(collectionConfig)}
+        @end
+        @join collectionConfig : context.getApiConfig.getInterfaceConfig(service).getSingleResourceNameConfigs()
+
+            {@createMatchFunctions(collectionConfig)}
+        @end
+    @end
+@end
+
+@private createResourceFunction(collectionConfig)
+    @@classmethod
+    def {@formatResourceFunctionName(collectionConfig)}(cls, {@createResourceFunctionParams(collectionConfig)}):
+        """Returns a fully-qualified {@entityName(collectionConfig)} resource name string."""
+        return cls.{@pathTemplateName(collectionConfig)}.render({
+            {@createRenderDictionary(collectionConfig)}
+        })
+@end
+
+@private createMatchFunctions(collectionConfig)
+  @join subField : collectionConfig.getNameTemplate.vars() on BREAK.add(BREAK)
+    @let fieldPath = resourceName(collectionConfig)
+      @@classmethod
+      def match_{@subField}_from_{@fieldPath}(cls, {@fieldPath}):
+          """Parses the {@subField} from a {@entityName(collectionConfig)} resource.
+
+          Args:
+            {@fieldPath} (string): A fully-qualified path representing a {@entityName(collectionConfig)}
+              resource.
+
+          Returns:
+            A string representing the {@subField}.
+          """
+          return cls.{@pathTemplateName(collectionConfig)}.match({@fieldPath}).get('{@subField}')
+    @end
+  @end
+@end
+
+@private resourceName(collectionConfig)
+  {@entityName(collectionConfig)}_name
+@end
+
+@private createResourceFunctionParams(collectionConfig)
+    @join param : collectionConfig.getNameTemplate.vars() on ", "
+        {@context.python.wrapIfKeywordOrBuiltIn(param)}
+    @end
+@end
+
+@private createRenderDictionary(collectionConfig)
+    @join param: collectionConfig.getNameTemplate.vars() on BREAK
+        '{@param}': {@context.python.wrapIfKeywordOrBuiltIn(param)},
+    @end
+@end
+
+@private defaultComments(element)
+    @join comment : context.defaultComments(element)
+        {@comment}
+    @end
+@end
+
+@private methodComments(service, method)
+  @let descriptionComments = context.methodDescriptionComments(method), \
+       signatureComments = context.methodSignatureComments(service, method, importHandler)
+    """
+    @join comment : descriptionComments
+      {@comment}
+    @end
+    @if descriptionComments.isEmpty
+    @else
+
+
+    @end
+    @if method.getRequestStreaming()
+      EXPERIMENTAL: This method interface might change in the future.
+
+    @end
+    {@methodSample(service, method)}
+    @if signatureComments.isEmpty
+    @else
+
+
+    @end
+    @join comment : signatureComments
+      {@comment}
+    @end
+    """
+  @end
+@end
+
+@private methodSample(service, method)
+  @let apiConfig = context.getApiConfig, \
+       apiName = context.getApiWrapperName(service), \
+       returnType = context.returnTypeOrEmpty(method, importHandler), \
+       fields = context.getRequiredFields(service, method), \
+       builder = context.newDocConfigBuilder \
+         .setInterface(service) \
+         .setApiConfig(apiConfig) \
+         .setApiName(apiName) \
+         .setImportHandler(importHandler) \
+         .setMethod(method) \
+         .setReturnType(returnType)
+    @if method.getRequestStreaming()
+      {@generateMethodSampleCode(builder \
+        .setRequestObjectInitCode(context, service, method) \
+        .setEmptyParams() \
+        .build)}
+    @else
+      {@generateMethodSampleCode(builder \
+        .setFieldInitCode(context, service, method, fields) \
+        .setFieldParams(context, fields) \
+        .build)}
+    @end
+  @end
+@end
+
+@private serviceMethodsSection(service)
+    @# Service calls
+    @join method : context.getSupportedMethodsV2(service) on BREAK.add(BREAK)
+        {@flattenedMethod(service, method)}
+    @end
+@end
+
+@private callLine(methodConfig, method, request)
+    @if methodConfig.isReturnEmptyMessageMethod(method)
+        self._{@methodName(method)}({@request}, options)
+    @else
+        return self._{@methodName(method)}({@request}, options)
+    @end
+@end
+
+@private methodName(method)
+    {@context.upperCamelToLowerUnderscore(method.getSimpleName())}
+@end
+
+@private flattenedMethod(service, method)
+    @let methodInputElementPath = importHandler.elementPath(method.getInputMessage, FALSE), \
+             documentation = methodComments(service, method), \
+             methodConfig = context.getApiConfig.getInterfaceConfig(service).getMethodConfig(method), \
+             requiredParams = methodConfig.getRequiredFields(), \
+             optionalParams = context.removePageTokenFromFields(methodConfig.getOptionalFields(), methodConfig)
+        @if method.getRequestStreaming
+            def {@methodName(method)}(
+                    self,
+                    requests,
+                    options=None):
+                @if documentation
+                    {@documentation}
+                @end
+                {@callLine(methodConfig, method, "requests")}
+        @else
+            @if or(requiredParams, optionalParams)
+                def {@methodName(method)}(
+                        self,
+                        @if requiredParams
+                            @if optionalParams
+                                {@requiredParameterNames(requiredParams)},
+                                {@optionalParameterValues(optionalParams)},
+                            @else
+                                {@requiredParameterNames(requiredParams)},
+                            @end
+                        @else
+                            {@optionalParameterValues(optionalParams)},
+                        @end
+                        options=None):
+                    @if documentation
+                        {@documentation}
+                    @end
+                    @if {@defaultMutableValues(optionalParams)}
+                        {@defaultMutableValues(optionalParams)}
+                    @end
+                    @if requiredParams
+                        @if optionalParams
+                            request = {@methodInputElementPath}(
+                                {@namedParameters(requiredParams)},
+                                {@namedParameters(optionalParams)})
+                        @else
+                            request = {@methodInputElementPath}(
+                                {@namedParameters(requiredParams)})
+                        @end
+                    @else
+                        request = {@methodInputElementPath}(
+                            {@namedParameters(optionalParams)})
+                    @end
+                    {@callLine(methodConfig, method, "request")}
+            @else
+                def {@methodName(method)}(
+                        self,
+                        options=None):
+                    @if documentation
+                        {@documentation}
+                    @end
+                    request = {@methodInputElementPath}()
+                    {@callLine(methodConfig, method, "request")}
+            @end
+        @end
+    @end
+@end
+
+@private requiredParameterNames(params)
+    @join field : params on ",".add(BREAK)
+        {@context.python.wrapIfKeywordOrBuiltIn({@field.getSimpleName()})}
+    @end
+@end
+
+@private optionalParameterValues(params)
+    @join field : params on ",".add(BREAK)
+        @let paramName = {@context.python.wrapIfKeywordOrBuiltIn(field.getSimpleName())}
+            @if or(context.isDefaultValueMutable(field), context.isOneof(field))
+                {@paramName}=None
+            @else
+                {@paramName}={@context.defaultValue(field, importHandler)}
+            @end
+        @end
+    @end
+@end
+
+@private defaultMutableValues(params)
+    @join field : params if and(context.isDefaultValueMutable(field), not(context.isOneof(field))) on BREAK
+        @let paramName = {@context.python.wrapIfKeywordOrBuiltIn(field.getSimpleName())}
+            if {@paramName} is None:
+                {@paramName} = {@context.defaultValue(field, importHandler)}
+        @end
+    @end
+@end
+
+@private namedParameters(params)
+    @join field : params on ",".add(BREAK)
+        @let paramName = {@field.getSimpleName()}
+            {@paramName}={@context.python.wrapIfKeywordOrBuiltIn(field.getSimpleName())}
+        @end
+    @end
 @end
