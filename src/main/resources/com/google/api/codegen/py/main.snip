@@ -207,7 +207,7 @@
 
 @private longRunningDescriptorFunction(xapiClass)
     @if xapiClass.hasLongRunningOperations
-      private static function getLongRunningDescriptors()
+      def getLongRunningDescriptors()
       {
           return [
               @join descriptor : xapiClass.longRunningDescriptors
@@ -241,55 +241,31 @@
         client_config=None,
         app_name='gax',
         app_version=_GAX_VERSION):
+        """Constructor.
 
+        Args:
+          service_path (string): The domain name of the API remote host.
+          port (int): The port on which to connect to the remote host.
+          channel (:class:`grpc.Channel`): A ``Channel`` instance through
+            which to make calls.
+          credentials (object): The authorization credentials to attach to
+            requests. These credentials identify this application to the
+            service.
+          ssl_credentials (:class:`grpc.ChannelCredentials`): A
+            ``ChannelCredentials`` instance for use with an SSL-enabled
+            channel.
+          scopes (list[string]): A list of OAuth2 scopes to attach to requests.
+          client_config (dict):
+            A dictionary for call options for each method. See
+            :func:`google.gax.construct_settings` for the structure of
+            this data. Falls back to the default config if not specified
+            or the specified config is missing data points.
+          app_name (string): The codename of the calling service.
+          app_version (string): The version of the calling service.
 
-
-    // TODO(garrettjones): add channel (when supported in gRPC)
-    /**
-     * Constructor.
-     *
-     * @@param array $options {
-     @if xapiClass.hasMissingDefaultOptions
-     *     Required. Options for configuring the service API wrapper. Those options
-     *     that must be provided are marked as Required.
-     @else
-     *     Optional. Options for configuring the service API wrapper.
-     @end
-     *
-     @if xapiClass.hasDefaultServiceAddress
-     *     @@type string $serviceAddress The domain name of the API remote host.
-     *                                  Default '{@xapiClass.serviceAddress}'.
-     @else
-     *     @@type string $serviceAddress Required. The domain name of the API remote host.
-     @end
-     *     @@type mixed $port The port on which to connect to the remote host. Default {@xapiClass.servicePort}.
-     *     @@type \Grpc\ChannelCredentials $sslCreds
-     *           A `ChannelCredentials` for use with an SSL-enabled channel.
-     *           Default: a credentials object returned from
-     *           \Grpc\ChannelCredentials::createSsl()
-     @if xapiClass.hasDefaultServiceScopes
-     *     @@type array $scopes A string array of scopes to use when acquiring credentials.
-     *                         Default the scopes for the {@xapiClass.serviceTitle}.
-     @else
-     *     @@type array $scopes Required. A string array of scopes to use when acquiring credentials.
-     @end
-     *     @@type array $retryingOverride
-     *           An associative array of string => RetryOptions, where the keys
-     *           are method names (e.g. 'createFoo'), that overrides default retrying
-     *           settings. A value of null indicates that the method in question should
-     *           not retry.
-     *     @@type int $timeoutMillis The timeout in milliseconds to use for calls
-     *                              that don't use retries. For calls that use retries,
-     *                              set the timeout in RetryOptions.
-     *                              Default: 30000 (30 seconds)
-     *     @@type string $appName The codename of the calling service. Default 'gax'.
-     *     @@type string $appVersion The version of the calling service.
-     *                              Default: the current version of GAX.
-     *     @@type \Google\Auth\CredentialsLoader $credentialsLoader
-     *                              A CredentialsLoader object created using the
-     *                              Google\Auth library.
-     * }
-     */
+        Returns:
+          A `{xapiClass.name}` object.
+        """
     public function __construct($options = [])
     {
         @if xapiClass.missingDefaultServiceAddress
@@ -421,9 +397,9 @@
 @private paramList(params)
     @join param : params on ", "
         @if param.defaultValue
-            ${@param.name} = {@param.defaultValue}
+            {@param.name}={@param.defaultValue}
         @else
-            ${@param.name}
+            {@param.name}
         @end
     @end
 @end
