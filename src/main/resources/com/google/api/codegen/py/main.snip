@@ -53,9 +53,8 @@
 @end
 
 @private aliasSection(viewModel)
-    @let ifaceConfig = context.getApiConfig.getInterfaceConfig(service), \
-            bundling = context.messages.filterBundlingMethods(ifaceConfig, context.getSupportedMethodsV2(service)), \
-            pageStreaming = context.messages.filterPageStreamingMethods(ifaceConfig, context.getSupportedMethodsV2(service))
+    @let bundling = viewModel.bundlingApiMethods.size, \
+         pageStreaming = viewModel.streamingApiMethods.size
         @if bundling
             _BundleDesc = google.gax.BundleDescriptor
         @end
@@ -102,20 +101,15 @@
         _CODE_GEN_NAME_VERSION = 'gapic/0.1.0'
 
         _GAX_VERSION = pkg_resources.get_distribution('google-gax').version
-        @if context.messages.filterPageStreamingMethods(ifaceConfig, context.getSupportedMethodsV2(service))
 
+        @if viewModel.pageStreamingDescriptors
             _PAGE_DESCRIPTORS = {
-                @join method : context.messages.filterPageStreamingMethods(ifaceConfig, context.getSupportedMethodsV2(service)) on {@", "}.add(BREAK)
-                    @let pageStreaming = ifaceConfig.getMethodConfig(method).getPageStreaming(), \
-                         requestToken = pageStreaming.getRequestTokenField().getSimpleName(), \
-                         responseToken = pageStreaming.getResponseTokenField().getSimpleName(), \
-                         resources = pageStreaming.getResourcesFieldName
-                        '{@methodName(method)}': _PageDesc(
-                            '{@requestToken}',
-                            '{@responseToken}',
-                            '{@resources}'
-                        )
-                    @end
+                @join desc : viewModel.pageStreamingDescriptors
+                    '{@desc.varName}': _PageDesc(
+                        '{@desc.requestTokenFieldName}',
+                        '{@desc.responseTokenFieldName}',
+                        '{@desc.resourcesFieldName}'
+                    ),
                 @end
             }
         @end
@@ -137,22 +131,21 @@
         @# The scopes needed to make gRPC calls to all of the methods defined in
         @# this service
         _ALL_SCOPES = (
-            @join auth_scope : context.getServiceConfig.getAuthScopes(service) on BREAK
+            @join auth_scope : viewModel.authScopes on BREAK
                 '{@auth_scope}',
             @end
         )
     @end
 @end
 
-@private constructDefaults(service)
-    @let ifaceConfig = context.getApiConfig.getInterfaceConfig(service), \
-         jsonBaseName = {@context.upperCamelToLowerUnderscore(service.getSimpleName)}
+@private constructDefaults(viewModel)
+    @let ifaceConfig = context.getApiConfig.getInterfaceConfig(service)
         default_client_config = json.loads(pkg_resources.resource_string(
-            __name__, '{@jsonBaseName}_client_config.json').decode())
+            __name__, '{@viewModel.packageName}_client_config.json').decode())
         @if or(context.messages.filterPageStreamingMethods(ifaceConfig, context.getSupportedMethodsV2(service)), \
                context.messages.filterBundlingMethods(ifaceConfig, context.getSupportedMethodsV2(service)))
             defaults = api_callable.construct_settings(
-                '{@service.getFullName}',
+                '{@viewModel.getTitle}',
                 default_client_config,
                 client_config,
                 config.STATUS_CODE_NAMES,
@@ -169,7 +162,7 @@
                 @end
         @else
             defaults = api_callable.construct_settings(
-                '{@service.getFullName}',
+                '{@viewModel.getTitle}',
                 default_client_config,
                 client_config,
                 config.STATUS_CODE_NAMES,
@@ -278,7 +271,10 @@
     _{@context.lowerUnderscoreToUpperUnderscore(entityName(collectionConfig))}_PATH_TEMPLATE
 @end
 
-@private pathTemplateSection(service)
+@private pathTemplateSection(modelView)
+    @join pathTemplate : modelView.pathTemplates
+        {@pathTemplate.name} = path_template.PathTemplate()
+    @end
     @if context.getApiConfig.getInterfaceConfig(service).getSingleResourceNameConfigs()
         @join collectionConfig : context.getApiConfig.getInterfaceConfig(service).getSingleResourceNameConfigs()
             {@pathTemplateName(collectionConfig)} = path_template.PathTemplate(
